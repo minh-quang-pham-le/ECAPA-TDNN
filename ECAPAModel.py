@@ -77,8 +77,10 @@ class ECAPAModel(nn.Module):
 				embedding_2 = self.speaker_encoder.forward(data_2, aug = False)
 				embedding_2 = F.normalize(embedding_2, p=2, dim=1)
 			embeddings[file] = [embedding_1, embedding_2]
+			
+		import sys
 		scores, labels  = [], []
-
+		
 		for line in lines:			
 			embedding_11, embedding_12 = embeddings[line.split()[1]]
 			embedding_21, embedding_22 = embeddings[line.split()[2]]
@@ -87,6 +89,11 @@ class ECAPAModel(nn.Module):
 			score_2 = torch.mean(torch.matmul(embedding_12, embedding_22.T))
 			score = (score_1 + score_2) / 2
 			score = score.detach().cpu().numpy()
+
+			if numpy.isnan(score):
+				sys.stderr.write(f"Warning: NaN score for trial {f1} vs {f2}\n")
+				continue
+				
 			scores.append(score)
 			labels.append(int(line.split()[0]))
 			
