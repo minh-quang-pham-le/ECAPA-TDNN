@@ -68,7 +68,7 @@ class ECAPAModel(nn.Module):
 			startframe = numpy.linspace(0, audio.shape[0]-max_audio, num=5)
 			for asf in startframe:
 				feats.append(audio[int(asf):int(asf)+max_audio])
-			feats = numpy.stack(feats, axis = 0).astype(float)
+			feats = numpy.stack(feats, axis = 0).astype(numpy.float64)
 			data_2 = torch.FloatTensor(feats).cuda()
 			# Speaker embeddings
 			with torch.no_grad():
@@ -78,7 +78,6 @@ class ECAPAModel(nn.Module):
 				embedding_2 = F.normalize(embedding_2, p=2, dim=1)
 			embeddings[file] = [embedding_1, embedding_2]
 			
-		import sys
 		scores, labels  = [], []
 		
 		for line in lines:			
@@ -89,10 +88,6 @@ class ECAPAModel(nn.Module):
 			score_2 = torch.mean(torch.matmul(embedding_12, embedding_22.T))
 			score = (score_1 + score_2) / 2
 			score = score.detach().cpu().numpy()
-
-			if numpy.isnan(score):
-				sys.stderr.write(f"Warning: NaN score for trial {f1} vs {f2}\n")
-				continue
 				
 			scores.append(score)
 			labels.append(int(line.split()[0]))
@@ -121,3 +116,4 @@ class ECAPAModel(nn.Module):
 				print("Wrong parameter length: %s, model: %s, loaded: %s"%(origname, self_state[name].size(), loaded_state[origname].size()))
 				continue
 			self_state[name].copy_(param)
+
