@@ -67,7 +67,7 @@ class train_loader(object):
 	def add_rev(self, audio):
 		rir_file    = random.choice(self.rir_files)
 		rir, sr     = soundfile.read(rir_file)
-		rir         = numpy.expand_dims(rir.astype(float),0)
+		rir         = numpy.expand_dims(rir.astype(numpy.float64),0)
 		rir         = rir / numpy.sqrt(numpy.sum(rir**2))
 		return signal.convolve(audio, rir, mode='full')[:,:self.num_frames * 160 + 240]
 
@@ -90,3 +90,4 @@ class train_loader(object):
 			noises.append(numpy.sqrt(10 ** ((clean_db - noise_db - noisesnr) / 10)) * noiseaudio)
 		noise = numpy.sum(numpy.concatenate(noises,axis=0),axis=0,keepdims=True)
 		return noise + audio
+
